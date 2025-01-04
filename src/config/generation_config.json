@@ -1,0 +1,38 @@
+{
+    "max_length": 280,
+    "temperature": 0.7,
+    "style_attributes": [
+        "informative",
+        "engaging",
+        "professional",
+        "concise",
+        "authentic",
+        "timely"
+    ],
+    "content_types": [
+        "announcement",
+        "insight",
+        "tip",
+        "discussion",
+        "question",
+        "poll",
+        "news",
+        "update"
+    ],
+    "hashtag_config": {
+        "max_hashtags": 3,
+        "preferred_positions": ["end", "integrated"],
+        "common_tags": {
+            "tech": ["#Tech", "#Technology", "#Innovation"],
+            "ai": ["#AI", "#ArtificialIntelligence", "#ML", "#MachineLearning"],
+            "dev": ["#Programming", "#Coding", "#Development", "#SoftwareEngineering"]
+        }
+    },
+    "engagement_prompts": [
+        "What do you think?",
+        "Share your thoughts!",
+        "Like if you agree!",
+        "RT to spread the word!",
+        "Follow for more updates!"
+    ]
+} 
