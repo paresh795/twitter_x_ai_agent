@@ -1,9 +1,9 @@
-"""OpenAI service for interacting with the OpenAI API"""
-import os
+"""OpenAI service for generating tweets"""
 import logging
-from typing import Dict, Any, List, Optional
-from openai import AsyncOpenAI
-from pathlib import Path
+import os
+from typing import Dict, Any
+import openai
+import backoff  # For better retry handling
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -12,41 +12,57 @@ logger = logging.getLogger(__name__)
 class OpenAIService:
     """Service for interacting with OpenAI API"""
     
-    def __init__(self, api_key: Optional[str] = None):
-        """Initialize OpenAI service with API key"""
-        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
-        if not self.api_key:
-            raise ValueError("OpenAI API key not provided")
-        
-        self.client = None
-        self.logger = logging.getLogger(__name__)
-        self.logger.info("OpenAI service initialized")
-    
-    async def ensure_initialized(self):
-        """Ensure the OpenAI client is initialized"""
-        if not self.client:
-            self.client = AsyncOpenAI(api_key=self.api_key)
-    
-    async def _make_request(
-        self,
-        messages: List[Dict[str, str]],
-        temperature: float = 0.7,
-        max_tokens: int = 150
-    ):
-        """Make a request to the OpenAI API"""
-        await self.ensure_initialized()
-        
+    def __init__(self):
+        """Initialize OpenAI service with API key from environment"""
         try:
-            response = await self.client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=messages,
-                temperature=temperature,
-                max_tokens=max_tokens
-            )
-            return response
+            api_key = os.getenv("OPENAI_API_KEY")
+            if not api_key:
+                raise Exception("OpenAI API key not found in environment variables")
+            
+            self.client = openai.OpenAI(api_key=api_key)
+            logger.info("OpenAI service initialized")
+            
         except Exception as e:
-            self.logger.error(f"OpenAI API request failed: {str(e)}")
-            raise
+            logger.error(f"Failed to initialize OpenAI service: {str(e)}")
+            raise Exception(f"Failed to initialize OpenAI service: {str(e)}")
+    
+    @backoff.on_exception(
+        backoff.expo,
+        (openai.RateLimitError, openai.APIError),
+        max_tries=3,
+        max_time=30
+    )
+    async def generate_completion(
+        self,
+        prompt: str,
+        max_tokens: int = 150,
+        temperature: float = 0.7
+    ) -> str:
+        """Generate completion using OpenAI API with retry handling"""
+        try:
+            response = await openai.AsyncOpenAI(api_key=self.client.api_key).chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are a professional social media expert."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=max_tokens,
+                temperature=temperature,
+                presence_penalty=0.6,
+                frequency_penalty=0.5
+            )
+            
+            if not response or not response.choices:
+                raise Exception("Invalid response from OpenAI API")
+            
+            return response.choices[0].message.content.strip()
+            
+        except openai.RateLimitError as e:
+            logger.warning(f"Rate limit hit, retrying: {str(e)}")
+            raise  # Let backoff handle the retry
+        except Exception as e:
+            logger.error(f"Failed to generate completion: {str(e)}")
+            raise Exception(f"Failed to generate completion: {str(e)}")
     
     async def generate_tweet(
         self,
@@ -55,80 +71,46 @@ class OpenAIService:
         max_length: int = 280,
         include_hashtags: bool = True,
         include_emojis: bool = True,
-        reference_tweets: List[str] = None
+        reference_tweets: list = None
     ) -> Dict[str, Any]:
-        """Generate a tweet using OpenAI"""
+        """Generate a tweet using OpenAI API"""
         try:
-            # Format reference tweets for the prompt
-            examples = ""
+            # Construct the prompt
+            prompt = f"Generate a {style} tweet about {topic}. "
+            
             if reference_tweets:
-                examples = "\nReference tweets for style:\n" + "\n".join(
-                    f"- {tweet}" for tweet in reference_tweets[:3]
-                )
+                prompt += "Use these tweets as style reference:\n"
+                for tweet in reference_tweets[:3]:  # Use up to 3 reference tweets
+                    prompt += f"- {tweet}\n"
             
-            # Create the prompt
-            prompt = f"""Generate a tweet about {topic} in a {style} style.
-{examples}
-
-Guidelines:
-- Maximum length: {max_length} characters
-- Include hashtags: {'Yes' if include_hashtags else 'No'}
-- Include emojis: {'Yes' if include_emojis else 'No'}
-- Keep the tone similar to the example tweets
-- Make it engaging and authentic
-- Focus on value and insights
-- Be concise and impactful
-
-Generate only the tweet text, no additional commentary."""
+            prompt += f"\nRequirements:\n"
+            prompt += f"- Maximum {max_length} characters\n"
+            if include_hashtags:
+                prompt += "- Include relevant hashtags\n"
+            if include_emojis:
+                prompt += "- Include relevant emojis\n"
+            prompt += "- Make it engaging and shareable\n"
+            prompt += "- Focus on value and insights\n"
             
-            # Make the API request
-            messages = [
-                {
-                    "role": "system",
-                    "content": "You are an expert social media writer specializing in creating engaging, professional tweets that maintain brand voice and drive engagement."
-                },
-                {"role": "user", "content": prompt}
-            ]
-            
-            response = await self._make_request(
-                messages=messages,
-                temperature=0.7,
-                max_tokens=100
+            # Generate the tweet
+            tweet_text = await self.generate_completion(
+                prompt=prompt,
+                max_tokens=max_length,
+                temperature=0.8
             )
             
-            # Clean and validate the response
-            tweet_text = response.choices[0].message.content.strip()
-            tweet_text = self._clean_tweet(tweet_text)
+            # Ensure the tweet is not too long
+            if len(tweet_text) > max_length:
+                tweet_text = tweet_text[:max_length]
             
-            if not self._validate_tweet(tweet_text, max_length):
-                raise ValueError("Generated tweet failed validation")
-            
+            logger.info("Tweet generated successfully")
             return {
                 "text": tweet_text,
-                "prompt": prompt,
-                "model": "gpt-3.5-turbo"
+                "length": len(tweet_text),
+                "includes_hashtags": "#" in tweet_text,
+                "includes_emojis": any(c in tweet_text for c in "😀😁😂🤣😃😄😅")
             }
             
         except Exception as e:
-            self.logger.error(f"Failed to generate tweet: {str(e)}")
-            raise
-    
-    def _clean_tweet(self, tweet: str) -> str:
-        """Clean and format the generated tweet"""
-        # Remove any quotes or extra whitespace
-        cleaned = tweet.strip().strip('"\'')
-        # Ensure proper spacing after punctuation
-        cleaned = cleaned.replace("..", ".").replace("..", ".")
-        cleaned = cleaned.replace("!!", "!").replace("!!", "!")
-        cleaned = cleaned.replace("  ", " ")
-        return cleaned
-    
-    def _validate_tweet(self, tweet: str, max_length: int) -> bool:
-        """Validate the generated tweet"""
-        if not tweet:
-            return False
-        if len(tweet) > max_length:
-            return False
-        if not any(char.isalnum() for char in tweet):
-            return False
-        return True 
+            logger.error(f"Failed to generate tweet: {str(e)}")
+            raise Exception(f"Failed to generate tweet: {str(e)}") 

@@ -1,95 +1,107 @@
-# Twitter/X AI Agent 🤖
+# Twitter AI Agent 🤖
 
-An intelligent Twitter bot that generates and posts tweets using AI, with scheduling capabilities and style matching based on reference tweets.
+An intelligent Twitter bot that generates and schedules personalized tweets using AI, maintaining your unique writing style and voice.
 
-## Features
+## Features ✨
 
-- 🧠 AI-powered tweet generation using OpenAI GPT
-- 🎯 Style matching based on reference tweets
-- ⏰ Schedule tweets for later (coming soon)
-- 📊 Analytics and monitoring (coming soon)
-- 🔄 Automatic posting with error handling
-- 🎨 Customizable tweet styles and options
+- **AI-Powered Tweet Generation**: Creates engaging tweets based on your topics while matching your personal writing style
+- **Style Personalization**: Uses your previous tweets as reference to maintain consistency in tone and style
+- **Smart Scheduling**: Schedule tweets for optimal posting times
+- **Interactive UI**: Clean, modern interface for tweet generation and management
+- **Real-time Preview**: See how your tweet will look before posting
+- **Error Handling**: Robust error handling and rate limit management
 
-## Prerequisites
+## Setup 🚀
 
-- Python 3.8+
-- Twitter Developer Account with API v2 access
-- OpenAI API key
-
-## Installation
-
-1. Clone the repository:
+1. **Clone the repository**
 ```bash
 git clone https://github.com/paresh795/twitter_x_ai_agent.git
 cd twitter_x_ai_agent
 ```
 
-2. Create and activate a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. Install dependencies:
+2. **Install dependencies**
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Create a `.env` file in the root directory with your API credentials:
+3. **Configure your credentials**
+Create a `.env` file in the root directory with your API keys:
 ```env
-OPENAI_API_KEY=your_openai_key
+OPENAI_API_KEY=your_openai_api_key
 TWITTER_API_KEY=your_twitter_api_key
 TWITTER_API_SECRET=your_twitter_api_secret
-TWITTER_ACCESS_TOKEN=your_access_token
-TWITTER_ACCESS_SECRET=your_access_secret
+TWITTER_ACCESS_TOKEN=your_twitter_access_token
+TWITTER_ACCESS_SECRET=your_twitter_access_secret
 ```
 
-## Usage
+4. **Set up your reference tweets**
+- Create a file at `src/data/reference_tweets.json`
+- Add your previous tweets in this format:
+```json
+{
+    "tweets": [
+        {"text": "Your first tweet here"},
+        {"text": "Your second tweet here"},
+        {"text": "Add more tweets..."}
+    ]
+}
+```
+These tweets will be used as reference to maintain your writing style.
 
-1. Start the Streamlit app:
+5. **Run the application**
 ```bash
 streamlit run src/app.py
 ```
 
-2. Enter a topic and customize generation options
-3. Generate and preview tweets
-4. Post immediately or schedule for later
+## Usage 💡
 
-## Project Structure
+1. **Generate Tweets**
+   - Enter your topic
+   - Customize style preferences (Professional, Casual, etc.)
+   - Add hashtags and emojis as needed
+   - Preview and post or schedule
+
+2. **Schedule Tweets**
+   - Generate a tweet
+   - Click "Schedule Tweet"
+   - Select date and time
+   - Confirm scheduling
+
+## Project Structure 📁
 
 ```
 twitter_ai_agent/
 ├── src/
-│   ├── components/      # UI components
-│   ├── services/        # Core services
-│   ├── data/           # Data files
-│   └── app.py          # Main application
-├── tests/              # Test files
-├── requirements.txt    # Dependencies
-└── README.md          # This file
+│   ├── components/         # UI components
+│   ├── services/          # Core services (Twitter, OpenAI, etc.)
+│   ├── data/             # Reference tweets and other data
+│   └── app.py            # Main application
+├── .env                  # Environment variables
+└── README.md            # Documentation
 ```
 
-## Contributing
+## Contributing 🤝
 
 1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## License
+## License 📝
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Acknowledgments
+## Acknowledgments 🙏
 
 - OpenAI for GPT API
-- Twitter for API v2 access
+- Twitter API
 - Streamlit for the UI framework
 
-## Contact
+## Contact 📧
 
-Paresh - [@YourTwitterHandle](https://twitter.com/YourTwitterHandle)
+Paresh - https://x.com/pareshranaut
 
-Project Link: [https://github.com/paresh795/twitter_x_ai_agent](https://github.com/paresh795/twitter_x_ai_agent) 
+My Youtube Channel - https://www.youtube.com/@paresh-ranaut
+
+My website : https://autolynxai.com

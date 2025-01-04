@@ -1,5 +1,6 @@
 """Twitter service for interacting with the Twitter API v2"""
 import logging
+import os
 from typing import Dict, Any
 import tweepy
 
@@ -10,15 +11,19 @@ logger = logging.getLogger(__name__)
 class TwitterService:
     """Service for interacting with Twitter API v2"""
     
-    def __init__(
-        self,
-        api_key: str,
-        api_secret: str,
-        access_token: str = None,
-        access_secret: str = None
-    ):
-        """Initialize Twitter service with credentials"""
+    def __init__(self):
+        """Initialize Twitter service with credentials from environment variables"""
         try:
+            # Get credentials from environment variables
+            api_key = os.getenv("TWITTER_API_KEY")
+            api_secret = os.getenv("TWITTER_API_SECRET")
+            access_token = os.getenv("TWITTER_ACCESS_TOKEN")
+            access_secret = os.getenv("TWITTER_ACCESS_SECRET")
+            
+            # Verify credentials
+            if not all([api_key, api_secret, access_token, access_secret]):
+                raise Exception("Missing Twitter API credentials in environment variables")
+            
             # Initialize the client with API v2 endpoints
             self.client = tweepy.Client(
                 consumer_key=api_key,
