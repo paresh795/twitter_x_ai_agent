@@ -90,6 +90,9 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Contact
 
-Paresh - [@YourTwitterHandle](https://twitter.com/YourTwitterHandle)
+My Youtube Channel - https://www.youtube.com/@paresh-ranaut
 
-Project Link: [https://github.com/paresh795/twitter_x_ai_agent](https://github.com/paresh795/twitter_x_ai_agent) 
+My website : https://autolynxai.com
+
+Paresh - https://x.com/pareshranaut
+
