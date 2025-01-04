@@ -1,6 +1,6 @@
 # Twitter/X AI Agent 🤖
 
-An intelligent Twitter bot that generates and posts tweets using AI, with scheduling capabilities and style matching based on reference tweets.
+An intelligent Twitter bot that generates and posts tweets using AI in the user's writing style and personality, with scheduling capabilities and style matching based on reference tweets.
 
 ## Features
 
